@@ -13,7 +13,11 @@ class Teleop:
         self.turn_scale = rospy.get_param('~turn_scale')
         self.drive_scale = rospy.get_param('~drive_scale')
         self.deadman_button = rospy.get_param('~deadman_button', 0)
-        self.planner_button = rospy.get_param('~planner_button', 1)
+        self.planner_button = rospy.get_param('~planner_button', 2)
+        self.speedup_button = rospy.get_param('~speedup_button', 1)
+        self.ang_axis = rospy.get_param('~angular_speed_axis', 0)
+        self.lin_axis = rospy.get_param('~linear_speed_axis', 1)
+        self.hz = rospy.get_param('~hz', 20)
 
         self.cmd = None
         self.joy = Joy()
@@ -23,7 +27,7 @@ class Teleop:
         rospy.Subscriber("plan_cmd_vel", Twist, self.planned_callback)
         self.planned_motion = Twist()
         
-        rate = rospy.Rate(rospy.get_param('~hz', 20))
+        rate = rospy.Rate(self.hz)
         
         while not rospy.is_shutdown():
             rate.sleep()
@@ -44,8 +48,12 @@ class Teleop:
         Use planner if a secondary button is pressed """
         self.joy = data
         cmd = Twist()
-        cmd.linear.x = data.axes[1] * self.drive_scale
-        cmd.angular.z = data.axes[0] * self.turn_scale
+        cmd.linear.x = data.axes[self.lin_axis] * self.drive_scale
+        cmd.angular.z = data.axes[self.ang_axis] * self.turn_scale
+        
+        if data.buttons[self.speedup_button] == 0:
+            cmd.linear.x = cmd.linear.x * 0.5
+            cmd.angular.z = cmd.angular.z * 0.5
 
         if data.buttons[self.deadman_button] == 1:
             self.cmd = cmd

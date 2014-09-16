@@ -3,7 +3,7 @@
 <robot xmlns:xacro="http://ros.org/wiki/xacro">
 
   <xacro:macro name="sick_lms100_gpu_laser_gazebo" params="name">
-    <gazebo reference="${name}_link">
+    <gazebo reference="$(arg prefix)_${name}_link">
       <sensor type="gpu_ray" name="${name}_lms100_gpu_sensor">
         <always_on>true</always_on>
         <update_rate>50</update_rate>
@@ -34,8 +34,8 @@
           </noise>
         </ray>
         <plugin name="gazebo_ros_${name}_controller" filename="libgazebo_ros_gpu_laser.so">
-          <topicName>${name}_data</topicName>
-          <frameName>${name}_link</frameName>
+          <topicName>scan</topicName>
+          <frameName>$(arg prefix)_${name}_link</frameName>
         </plugin>
       </sensor>
     </gazebo>
